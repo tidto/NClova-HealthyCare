@@ -1,0 +1,16 @@
+version: '3.9'
+services:
+  postgres:
+    image: postgres:16
+    container_name: voice-emr-postgres
+    environment:
+      POSTGRES_DB: voice_emr
+      POSTGRES_USER: voice_emr
+      POSTGRES_PASSWORD: voice_emr
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata:
