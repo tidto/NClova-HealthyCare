@@ -1,0 +1,1 @@
+- [OpenAPI/Zod compatibility](openapi-zod-compatibility.md) — generated integer validators require a Zod runtime that supports z.int(); verify codegen compatibility.
