@@ -1,0 +1,208 @@
+openapi: 3.1.0
+info:
+  # Do not change the title, if the title changes, the import paths will be broken
+  title: Api
+  version: 0.1.0
+  description: HealthyCare Voice EMR MVP API
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+    description: Health operations
+  - name: emr
+    description: Voice EMR intake and review operations
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      description: Returns server health status
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+  /emr/summary:
+    get:
+      operationId: getEmrSummary
+      tags: [emr]
+      summary: Get EMR workspace summary
+      description: Returns a small dashboard summary and the active AI configuration.
+      responses:
+        "200":
+          description: EMR summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmrSummary"
+  /emr/records:
+    get:
+      operationId: listEmrRecords
+      tags: [emr]
+      summary: List recent EMR records
+      parameters:
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: number
+            minimum: 1
+            maximum: 50
+            default: 10
+      responses:
+        "200":
+          description: Recent EMR records
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/EmrRecord"
+  /emr/intake:
+    post:
+      operationId: createEmrIntake
+      tags: [emr]
+      summary: Extract and save a structured EMR draft
+      description: Creates a patient visit record from a transcript. The result is an assistive draft and requires clinician review.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/IntakeInput"
+      responses:
+        "201":
+          description: EMR draft created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmrRecord"
+        "400":
+          description: Invalid intake
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /emr/records/{recordId}:
+    get:
+      operationId: getEmrRecord
+      tags: [emr]
+      summary: Get one EMR record
+      parameters:
+        - name: recordId
+          in: path
+          required: true
+          schema:
+            type: number
+            minimum: 1
+      responses:
+        "200":
+          description: EMR record
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmrRecord"
+        "404":
+          description: Record not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+components:
+  schemas:
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+      required:
+        - status
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+        - error
+    KeywordMap:
+      type: object
+      additionalProperties:
+        type: string
+    IntakeInput:
+      type: object
+      properties:
+        patientName:
+          type: string
+          minLength: 1
+          maxLength: 50
+        birthDate:
+          type: string
+          format: date
+        transcript:
+          type: string
+          minLength: 1
+          maxLength: 20000
+      required:
+        - patientName
+        - birthDate
+        - transcript
+    EmrRecord:
+      type: object
+      properties:
+        recordId:
+          type: number
+        patientId:
+          type: number
+        patientName:
+          type: string
+        birthDate:
+          type: string
+          format: date
+        cc:
+          type: string
+        duration:
+          type: string
+        presentIllness:
+          type: string
+        keywords:
+          $ref: "#/components/schemas/KeywordMap"
+        transcript:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - recordId
+        - patientId
+        - patientName
+        - birthDate
+        - cc
+        - duration
+        - presentIllness
+        - keywords
+        - transcript
+        - createdAt
+    EmrSummary:
+      type: object
+      properties:
+        totalRecords:
+          type: number
+        todayRecords:
+          type: number
+        model:
+          type: string
+        provider:
+          type: string
+        fallbackEnabled:
+          type: boolean
+      required:
+        - totalRecords
+        - todayRecords
+        - model
+        - provider
+        - fallbackEnabled
+

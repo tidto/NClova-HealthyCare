@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "HealthyCare Voice EMR"
+description = "A focused healthcare intake assistant that turns patient conversation transcripts into reviewable CC, duration, present illness, and symptom keyword summaries for clinicians."
+version = "1.0.0"
+id = "artifacts/voice-emr"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 20331
+
+[services.development]
+run = "pnpm --filter @workspace/voice-emr run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/voice-emr", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/voice-emr/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "20331"
+BASE_PATH = "/"
